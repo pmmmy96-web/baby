@@ -14,57 +14,90 @@ body{
   justify-content:center;
   font-family:system-ui;
   overflow:hidden;
-  background: radial-gradient(circle at 30% 30%, #3a0000, #000000 70%);
+  background:black;
   color:white;
 }
 
-/* 붉은 안개 애니메이션 */
+/* 심장박동 배경 */
 body::before{
   content:"";
   position:fixed;
   inset:0;
-  background: radial-gradient(circle at 70% 60%, rgba(255,0,0,0.25), transparent 60%);
-  animation: moveFog 6s ease-in-out infinite alternate;
+  background:radial-gradient(circle at center, #2b0000 0%, #000 70%);
+  animation: pulse 2s infinite;
+  z-index:0;
+}
+
+@keyframes pulse{
+  0%{ transform:scale(1); opacity:0.8;}
+  50%{ transform:scale(1.05); opacity:1;}
+  100%{ transform:scale(1); opacity:0.8;}
+}
+
+/* 안개 */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at 30% 40%, rgba(255,0,0,0.2), transparent 60%);
+  animation: fog 6s ease-in-out infinite alternate;
   pointer-events:none;
 }
 
-@keyframes moveFog{
-  from{ transform:translate(-30px,-20px); }
-  to{ transform:translate(30px,20px); }
+@keyframes fog{
+  from{ transform:translate(-40px,-20px); }
+  to{ transform:translate(40px,20px); }
 }
 
 .card{
   width:min(420px,92vw);
-  background:rgba(20,0,0,0.85);
-  padding:28px;
+  background:rgba(10,0,0,0.9);
+  padding:30px;
   border-radius:24px;
   text-align:center;
-  box-shadow:0 0 40px rgba(255,0,0,0.3);
-  backdrop-filter:blur(6px);
+  box-shadow:0 0 50px rgba(255,0,0,0.4);
+  position:relative;
+  z-index:2;
 }
 
+/* 글자 천천히 등장 */
 h2{
-  margin-bottom:25px;
+  margin-bottom:30px;
   font-size:22px;
-  letter-spacing:1px;
+  opacity:0;
+  animation: fadeIn 3s forwards;
+}
+
+@keyframes fadeIn{
+  to{ opacity:1; }
 }
 
 button{
-  padding:14px 32px;
+  padding:15px 35px;
   font-size:18px;
   font-weight:800;
   border:none;
   border-radius:16px;
-  background:#ff0033;
+  background:#990000;
   color:white;
   cursor:pointer;
-  box-shadow:0 0 15px rgba(255,0,0,0.7);
+  box-shadow:0 0 20px red;
   transition:0.3s;
 }
 
 button:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 25px rgba(255,0,0,1);
+  transform:scale(1.1);
+  box-shadow:0 0 40px red;
+}
+
+/* 화면 깜빡임 효과 */
+.flash{
+  position:fixed;
+  inset:0;
+  background:black;
+  opacity:0;
+  pointer-events:none;
+  z-index:5;
 }
 
 .videoWrap{
@@ -75,6 +108,8 @@ button:hover{
 </head>
 
 <body>
+
+<div class="flash" id="flash"></div>
 
 <div class="card">
   <h2>後面沒有別人對吧？ 😈</h2>
@@ -99,7 +134,9 @@ button:hover{
 const okBtn = document.getElementById("okBtn");
 const videoWrap = document.getElementById("videoWrap");
 const loveVideo = document.getElementById("loveVideo");
+const flash = document.getElementById("flash");
 
+// 이미 본 경우 차단
 if(localStorage.getItem("watchedVideo") === "true"){
   okBtn.disabled = true;
   okBtn.innerText = "已經看過了 😏";
@@ -107,10 +144,17 @@ if(localStorage.getItem("watchedVideo") === "true"){
 
 okBtn.addEventListener("click", ()=>{
   if(localStorage.getItem("watchedVideo") === "true") return;
-  videoWrap.style.display = "block";
-  loveVideo.play();
+
+  // 화면 깜빡임 효과
+  flash.style.opacity = "1";
+  setTimeout(()=>{
+    flash.style.opacity = "0";
+    videoWrap.style.display = "block";
+    loveVideo.play();
+  },600);
 });
 
+// 영상 끝나면 영구 차단
 loveVideo.addEventListener("ended", ()=>{
   localStorage.setItem("watchedVideo", "true");
   videoWrap.innerHTML = "<h3>已經結束了 💋</h3>";
@@ -118,6 +162,7 @@ loveVideo.addEventListener("ended", ()=>{
   okBtn.innerText = "已經看過了 😏";
 });
 
+// 우클릭 방지
 document.addEventListener("contextmenu", e => e.preventDefault());
 </script>
 
